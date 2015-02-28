@@ -14,6 +14,8 @@ DallasTemperature sensors(&oneWire);
 // Flag to control whether the system is active or passive (read-only)
 bool isActive = false;
 
+bool isRelayOn;
+
 
 float readTemperature(void) {
   sensors.requestTemperatures();
@@ -22,35 +24,43 @@ float readTemperature(void) {
 
 
 void switchRelayOn(void) {
-  if (!isActive) {
+  if (!isActive || isRelayOn) {
     return;
   }
 
+  isRelayOn = true;
   digitalWrite(RELAY_PIN, HIGH);
   Serial.println("Switching relay on");
 }
 
 
 void switchRelayOff(void) {
-  if (!isActive) {
+  if (!isActive || !isRelayOn) {
     return;
   }
-  
+
+  isRelayOn = false;
   digitalWrite(RELAY_PIN, LOW);
   Serial.println("Switching relay off");
 }
 
 
+void setupRelay(void) {
+  pinMode(RELAY_PIN, OUTPUT);
+  isRelayOn = false;
+}
+
+
 void setActiveMode() {
-  Serial.println("System is now active");
   isActive = true;
+  Serial.println("System is now active");
 }
 
 
 void setPassiveMode() {
   switchRelayOff();
-  Serial.println("System is now passive");
   isActive = false;
+  Serial.println("System is now passive");
 }
 
 
@@ -69,8 +79,7 @@ void setup(void) {
 
   sensors.begin();
   
-  pinMode(RELAY_PIN, OUTPUT);
-  switchRelayOff();
+  setupRelay();
 }
 
 
