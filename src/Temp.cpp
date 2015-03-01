@@ -4,6 +4,7 @@
 #define ONE_WIRE_BUS 4
 #define RELAY_PIN 10
 #define ACTIVE_SWITCH_PIN 2
+#define ACTIVE_LED_PIN 13
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
@@ -12,7 +13,7 @@ OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature sensors(&oneWire);
 
 // Flag to control whether the system is active or passive (read-only)
-bool isActive = false;
+bool isActive;
 
 bool isRelayOn;
 
@@ -53,6 +54,7 @@ void setupRelay(void) {
 
 void setActiveMode() {
   isActive = true;
+  digitalWrite(ACTIVE_LED_PIN, HIGH);
   Serial.println("System is now active");
 }
 
@@ -60,6 +62,7 @@ void setActiveMode() {
 void setPassiveMode() {
   switchRelayOff();
   isActive = false;
+  digitalWrite(ACTIVE_LED_PIN, LOW);
   Serial.println("System is now passive");
 }
 
@@ -73,12 +76,19 @@ void toggleActiveMode() {
 }
 
 
+void setupModeControl(void) {
+  isActive = false;
+  pinMode(ACTIVE_LED_PIN, OUTPUT);
+}
+
+
 void setup(void) {
   Serial.begin(9600);
   Serial.println("Starting up Temperature Monitor/Controller");
 
   sensors.begin();
   
+  setupModeControl();
   setupRelay();
 }
 
