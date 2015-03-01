@@ -17,6 +17,8 @@ bool isActive;
 
 bool isRelayOn;
 
+int targetTemperature;
+
 
 float readTemperature(void) {
   sensors.requestTemperatures();
@@ -90,6 +92,7 @@ void setup(void) {
   
   setupModeControl();
   setupRelay();
+  targetTemperature = readTemperature();
 }
 
 
@@ -102,10 +105,19 @@ void loop(void) {
   float temperature = readTemperature();
   Serial.println(temperature);
   
-  if (temperature < 28.0) {
+  if (temperature < targetTemperature) {
     switchRelayOn();
   } else {
     switchRelayOff();
+  }
+}
+
+
+void serialEvent() {
+  while (Serial.available()) {
+    targetTemperature = (int)Serial.read();
+    Serial.print("Set target temperature to ");
+    Serial.println(targetTemperature);
   }
 }
 
