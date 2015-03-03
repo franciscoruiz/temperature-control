@@ -1,23 +1,94 @@
-#include <OneWire.h>
 #include <DallasTemperature.h>
+#include <LiquidCrystal.h>
+#include <OneWire.h>
+
 
 #define ONE_WIRE_BUS 4
-#define RELAY_PIN 10
+#define RELAY_PIN 6
 #define ACTIVE_SWITCH_PIN 2
 #define ACTIVE_LED_PIN 13
 
 // Setup a oneWire instance to communicate with any OneWire devices (not just Maxim/Dallas temperature ICs)
 OneWire oneWire(ONE_WIRE_BUS);
 
-// Pass our oneWire reference to Dallas Temperature. 
+// Pass our oneWire reference to Dallas Temperature.
 DallasTemperature sensors(&oneWire);
 
-// Flag to control whether the system is active or passive (read-only)
+// Initialize the library with the numbers of the interface pins
+LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+
+#define STATUS_MESSAGE_MILLIS 2000
+
+unsigned long lcd_timer;
+
+// Flag to control whether the system is active or passive
 bool isActive;
 
 bool isRelayOn;
 
-int targetTemperature;
+float targetTemperature;
+
+
+bool isDisplayLocked = false;
+
+void lockDisplay () {
+  isDisplayLocked = true;
+  lcd_timer = millis();
+}
+
+void releaseDisplay() {
+  isDisplayLocked = false;
+}
+
+
+bool isDisplayAvailable() {
+  if (!isDisplayLocked) {
+    return true;
+  }
+
+  bool isTimerExpired = millis() - lcd_timer > STATUS_MESSAGE_MILLIS;
+  if (isTimerExpired) {
+    releaseDisplay();
+  }
+  return isTimerExpired;
+}
+
+
+void lcdPrint(char const *line1, char const *line2) {
+  lcd.clear();
+
+  lcd.setCursor(0, 0);
+  lcd.print(line1);
+
+  lcd.setCursor(0, 1);
+  lcd.print(line2);
+}
+
+
+void lcdPrint(char const *line1) {
+  lcdPrint(line1, "");
+}
+
+
+void displayStatusMessage(char const *message) {
+  lockDisplay();
+  lcdPrint(message);
+}
+
+
+void displayTemperature(float temperature) {
+  if (!isDisplayAvailable()) {
+    return;
+  }
+
+  char lcd_line0[16];
+  char lcd_line1[16];
+
+  sprintf(lcd_line0, "Current: %d", (int)temperature);
+  sprintf(lcd_line1, "Target:  %d", (int)targetTemperature);
+
+  lcdPrint(lcd_line0, lcd_line1);
+}
 
 
 float readTemperature(void) {
@@ -33,7 +104,7 @@ void switchRelayOn(void) {
 
   isRelayOn = true;
   digitalWrite(RELAY_PIN, HIGH);
-  Serial.println("Switching relay on");
+  displayStatusMessage("Relay: ON");
 }
 
 
@@ -44,7 +115,7 @@ void switchRelayOff(void) {
 
   isRelayOn = false;
   digitalWrite(RELAY_PIN, LOW);
-  Serial.println("Switching relay off");
+  displayStatusMessage("Relay: OFF");
 }
 
 
@@ -57,7 +128,7 @@ void setupRelay(void) {
 void setActiveMode() {
   isActive = true;
   digitalWrite(ACTIVE_LED_PIN, HIGH);
-  Serial.println("System is now active");
+  displayStatusMessage("System: ACTIVE");
 }
 
 
@@ -65,7 +136,7 @@ void setPassiveMode() {
   switchRelayOff();
   isActive = false;
   digitalWrite(ACTIVE_LED_PIN, LOW);
-  Serial.println("System is now passive");
+  displayStatusMessage("System: PASSIVE");
 }
 
 
@@ -86,38 +157,38 @@ void setupModeControl(void) {
 
 void setup(void) {
   Serial.begin(9600);
-  Serial.println("Starting up Temperature Monitor/Controller");
+
+  lcd.begin(16, 2);
 
   sensors.begin();
-  
+
   setupModeControl();
   setupRelay();
+
   targetTemperature = readTemperature();
 }
 
 
-void loop(void) { 
+void loop(void) {
   bool isSwitchPressed = digitalRead(ACTIVE_SWITCH_PIN) == HIGH;
   if (isSwitchPressed) {
     toggleActiveMode();
   }
-  
+
   float temperature = readTemperature();
-  Serial.println(temperature);
-  
+
   if (temperature < targetTemperature) {
     switchRelayOn();
   } else {
     switchRelayOff();
   }
+
+  displayTemperature(temperature);
 }
 
 
 void serialEvent() {
   while (Serial.available()) {
-    targetTemperature = (int)Serial.read();
-    Serial.print("Set target temperature to ");
-    Serial.println(targetTemperature);
+    targetTemperature = (float)(int)Serial.read();
   }
 }
-
