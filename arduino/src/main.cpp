@@ -18,7 +18,6 @@ LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
 Display display(&lcd);
 
 
-
 // Flag to control whether the system is active or passive
 bool isActive;
 
@@ -126,8 +125,27 @@ void loop(void) {
 String command = "";
 
 
+typedef union {
+  float floatingPoint;
+  byte binary[4];
+} binaryFloat;
+
+
 void executeCommand(void) {
-  targetTemperature = command.toFloat();
+  if (command.startsWith("SET ")) {
+    targetTemperature = command.substring(4).toFloat();
+    Serial.println("OK");
+  } else if (command == "ON") {
+    setActiveMode();
+    Serial.println("OK");
+  } else if (command == "OFF") {
+    setPassiveMode();
+    Serial.println("OK");
+  } else if (command == "GET") {
+    binaryFloat.floatingPoint = temperature;
+    Serial.print(binaryFloat.binary, 4);
+    Serial.println();
+  }
 }
 
 
