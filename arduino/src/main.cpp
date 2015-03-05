@@ -187,8 +187,23 @@ void loop(void) {
 }
 
 
+String command = "";
+
+
+void executeCommand(void) {
+  targetTemperature = command.toFloat();
+}
+
+
 void serialEvent() {
+  int input;
   while (Serial.available()) {
-    targetTemperature = (float)(int)Serial.read();
+    input = Serial.read();
+    if (input == '\n') {
+      executeCommand();
+      command = "";
+    } else {
+      command += (char)input;
+    }
   }
 }

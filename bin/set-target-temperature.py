@@ -15,5 +15,5 @@ baudrate = 9600
 
 print 'Connecting to device {} ({})'.format(device, baudrate)
 port = Serial(device, baudrate)
-port.write(chr(int(sys.argv[1])))
-
+port.write(sys.argv[1] + '\n')
+port.close()
