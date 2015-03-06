@@ -104,13 +104,15 @@ void setup(void) {
 }
 
 
+float temperature = 0.0;
+
 void loop(void) {
   bool isSwitchPressed = digitalRead(ACTIVE_SWITCH_PIN) == HIGH;
   if (isSwitchPressed) {
     toggleActiveMode();
   }
 
-  float temperature = readTemperature();
+  temperature = readTemperature();
 
   if (temperature < targetTemperature) {
     switchRelayOn();
@@ -125,13 +127,8 @@ void loop(void) {
 String command = "";
 
 
-typedef union {
-  float floatingPoint;
-  byte binary[4];
-} binaryFloat;
-
-
 void executeCommand(void) {
+
   if (command.startsWith("SET ")) {
     targetTemperature = command.substring(4).toFloat();
     Serial.println("OK");
@@ -142,9 +139,9 @@ void executeCommand(void) {
     setPassiveMode();
     Serial.println("OK");
   } else if (command == "GET") {
-    binaryFloat.floatingPoint = temperature;
-    Serial.print(binaryFloat.binary, 4);
-    Serial.println();
+    Serial.println(temperature);
+  } else {
+    Serial.println("Unknown");
   }
 }
 
