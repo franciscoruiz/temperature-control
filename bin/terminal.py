@@ -5,31 +5,14 @@ import sys
 from serial import Serial
 from serial import SerialException
 
-
-def connect():
-  device_matches = glob('/dev/ttyACM*')
-  if not device_matches:
-    exit('Cannot find device. Is the Arduino connected?')
-
-  device = device_matches[0]
-  baudrate = 9600
-
-  print 'Connecting to device {} ({})'.format(device, baudrate)
-  port = Serial(device, baudrate)
-  return port
-
-
-def send_command(port, cmd):
-  port.write(cmd)
-  response = port.readline()
-  return response
+from temperature_control import Arduino
 
 
 def run_terminal():
-  port = connect()
+  arduino = Arduino.autoconnect()
   while True:
-    command = sys.stdin.readline()
-    response = send_command(port, command)
+    command = sys.stdin.readline().strip()
+    response = arduino.send_command(command)
     print response
 
 
