@@ -1,11 +1,9 @@
 #! /usr/bin/env python
-from glob import glob
 import sys
 
-from serial import Serial
 from serial import SerialException
 
-from temperature_control import Arduino
+from thermostat.interface import Arduino
 
 
 def run_terminal():

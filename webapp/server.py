@@ -4,7 +4,7 @@ from flask import jsonify
 from flask import request
 from flask import Response
 
-from temperature_control import TemperatureControl
+from thermostat.interface import TemperatureControl
 
 
 app = Flask(__name__)
