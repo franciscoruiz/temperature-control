@@ -28,12 +28,6 @@ class Arduino(object):
 
 class TemperatureControl(Arduino):
 
-  def switch_on(self):
-    self.send_command("ON")
-
-  def switch_off(self):
-    self.send_command("OFF")
-
   def set_temperature(self, temperature):
     self.send_command("SET {}".format(temperature))
 
@@ -41,3 +35,15 @@ class TemperatureControl(Arduino):
     temperature_raw = self.send_command("GET")
     temperature = float(temperature_raw)
     return temperature
+
+  def is_active(self):
+    return bool(int(self.send_command("ACTIVE")))
+
+  def switch_on(self):
+    self.send_command("ON")
+
+  def switch_off(self):
+    self.send_command("OFF")
+
+  def get_status(self):
+    return bool(int(self.send_command("STATUS")))

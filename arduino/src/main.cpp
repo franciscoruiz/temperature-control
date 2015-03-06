@@ -132,14 +132,18 @@ void executeCommand(void) {
   if (command.startsWith("SET ")) {
     targetTemperature = command.substring(4).toFloat();
     Serial.println("OK");
+  } else if (command == "GET") {
+    Serial.println(temperature);
   } else if (command == "ON") {
     setActiveMode();
     Serial.println("OK");
   } else if (command == "OFF") {
     setPassiveMode();
     Serial.println("OK");
-  } else if (command == "GET") {
-    Serial.println(temperature);
+  } else if (command == "ACTIVE") {
+    Serial.println(isActive);
+  } else if (command == "STATUS") {
+    Serial.println(isRelayOn);
   } else {
     Serial.println("Unknown");
   }
