@@ -106,7 +106,7 @@
         var getTemperature = function () {
           var req = $.get("/temperature/");
           req.success(function (data) {
-            updateCurrentTemperatureElement(data.current);
+            updateCurrentTemperatureElement(data.temperature);
             updateTargetTemperatureElement(data.target);
           });
         };
@@ -122,16 +122,23 @@
         // Utilities
         var updateCurrentTemperatureElement = function (temp) {
           current = temp;
-          var tempSplit = splitNumber(temp);
-          $current.html(tempSplit.natural);
-          $currentDecimal.html("." + tempSplit.decimal);
+          updateTemperatureElement(temp, $current, $currentDecimal);
         };
 
         var updateTargetTemperatureElement = function (temp) {
           target = temp;
-          var tempSplit = splitNumber(temp);
-          $target.html(tempSplit.natural);
-          $targetDecimal.html("." + tempSplit.decimal);
+          updateTemperatureElement(temp, $target, $targetDecimal);
+        };
+
+        var updateTemperatureElement = function (temp, $natural, $decimal) {
+          if (temp === null) {
+            $natural.html("-");
+            $decimal.html("");
+          } else {
+            var tempSplit = splitNumber(temp);
+            $natural.html(tempSplit.natural);
+            $decimal.html("." + tempSplit.decimal);
+          }
         };
 
         var splitNumber = function (number) {

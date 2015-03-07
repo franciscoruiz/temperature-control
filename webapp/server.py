@@ -10,7 +10,11 @@ from flask import send_file
 
 from thermostat.interface import DeviceNotFoundException
 from thermostat.interface import Thermostat
+from thermostat.storage import Storage
 from thermostat.testing_utils import MockThermostat
+
+
+_TEMPERATURE_DB = "temperatures.db"
 
 
 parser = argparse.ArgumentParser(description="Run the thermostat server.")
@@ -47,12 +51,15 @@ app = Flask(__name__)
 def index():
   return send_file("index.html")
 
+
 @app.route("/temperature/", methods=["GET", "POST"])
 def temperature():
+  storage = Storage(_TEMPERATURE_DB)
   if request.method == "GET":
-    temperature = thermostat.get_temperature()
+    temperature = storage.get_latest()
+    temperature = temperature and temperature.temperature or None
     response = jsonify(
-      current=temperature,
+      temperature=temperature,
       target=thermostat.target_temperature,
       )
 
