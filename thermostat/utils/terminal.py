@@ -14,10 +14,10 @@ def run_terminal():
     print response
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   try:
     run_terminal()
   except KeyboardInterrupt:
-    exit('\n')
+    exit("\n")
   except SerialException:
-    exit('Device disconnected.')
+    exit("Device disconnected.")
