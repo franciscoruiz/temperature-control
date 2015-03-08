@@ -2,8 +2,8 @@
 <html>
   <head>
     <meta charset="utf-8">
-    <title></title>
-    <meta name="description" content="">
+    <title>Thermostat</title>
+    <meta name="description" content="thermostat">
     <meta name="HandheldFriendly" content="True">
     <meta name="MobileOptimized" content="320">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui">
@@ -21,7 +21,14 @@
 
       body {
         margin: 0;
+      }
+
+      body.on {
         background: #FFC107;
+      }
+
+      body.off {
+        background: #727272;
       }
 
       .container {
@@ -68,6 +75,16 @@
       .target-temperature-decimal {
         font-size: 20px;
       }
+
+      .footer {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .status {
+        font-size: 40px;
+      }
     </style>
   </head>
   <body class="default-primary-color">
@@ -83,6 +100,11 @@
           <span class="target-temperature-decimal">.0</span>
           <button class="control control-right">+</button>
         </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="current-temperature status">
+        <button class="control">ON</button>
       </div>
     </div>
 
@@ -177,6 +199,49 @@
 
         $(document).on("click", ".control-left", decreaseTargetTemperature);
         $(document).on("click", ".control-right", increaseTargetTemperature);
+
+
+        // Status
+        var $statusBtn = $(".status button");
+        var isActive = null;
+
+        var getStatus = function () {
+          var req = $.get("/status/");
+          req.success(function (data) {
+            isActive = data.is_active;
+            updateStatusElement(data.is_active);
+          });
+        };
+
+        var updateStatusElement = function (isActive) {
+          var label;
+          var $body = $("body");
+          var bodyClass;
+          if (isActive) {
+            $body.addClass("on").removeClass("off");
+            label = "ON";
+
+          } else {
+            $body.addClass("off").removeClass("on");
+            label = "OFF";
+          }
+          $statusBtn.html(label);
+        };
+
+        var toggleStatus = function () {
+          isActive = !isActive;
+          updateStatusElement(isActive);
+
+          $.ajax({
+            type: "POST",
+            url: "/status/",
+            data: JSON.stringify({is_active: isActive}),
+            contentType: "application/json"
+          });
+        };
+
+        getStatus();
+        $statusBtn.on("click", toggleStatus);
       });
     </script>
   </body>
