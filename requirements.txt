@@ -7,5 +7,5 @@ click==3.3
 itsdangerous==0.24
 platformio==1.0.1
 pyserial==2.7
-requests==2.5.3
+requests==2.20
 wsgiref==0.1.2
